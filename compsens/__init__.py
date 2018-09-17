@@ -3,13 +3,13 @@ import cvxpy
 
 
 def compute_dt(t):
-    dt = numpy.unique(numpy.diff(t))
+    dt = numpy.unique(numpy.around(numpy.diff(t), 10))
     if len(numpy.unique(dt)) > 1:
-        raise RuntimeError("time points are not equidistant: " + str(dt))
+        raise ValueError("time points are not equidistant: " + str(dt))
     return dt[0]
 
 
-def sanity_check(t, w_min, w_max):
+def check_sanity(t, w_min, w_max):
     dt = compute_dt(t)
     t_final = max(t)
 
@@ -18,20 +18,20 @@ def sanity_check(t, w_min, w_max):
 
     # check temporal resolution
     if dt >= dt_required:
-        raise RuntimeError("temporal spacing too large: dt={}≮{}".format(
+        raise ValueError("temporal spacing too large: dt={}≮{}".format(
             dt, dt_required))
 
     # check signal length
-    if t_final < t_final_required:
-        raise RuntimeError("final time too small: t_final={}≯{}".format(
+    if t_final <= t_final_required:
+        raise ValueError("final time too small: t_final={}≯{}".format(
             t_final, t_final_required))
 
 
-def compsens1d(t, signal, w_max, dw, method="bp", noise=1e-10, verbose=True):
+def compsens1d(t, signal, dw, w_max, method="bp", noise=1e-8, verbose=True):
     # check for valid method
     method = method.lower()
     if method not in ["bp", "qp", "ls"]:
-        raise RuntimeError(
+        raise ValueError(
             "invalid method {}, choose from: bp, qp, and ls".format(method))
 
     # create working copies of input
@@ -76,7 +76,7 @@ def compsens1d(t, signal, w_max, dw, method="bp", noise=1e-10, verbose=True):
         objective = cvxpy.Minimize(
             cvxpy.norm(A * variable - signal_tilde, 2)**2 +
             noise * cvxpy.norm(variable, 1))
-    elif method == "sp":
+    elif method == "ls":
         constraints = [cvxpy.norm(variable) <= noise]
         objective = cvxpy.Minimize(cvxpy.norm(A * variable - signal_tilde, 2))
 
