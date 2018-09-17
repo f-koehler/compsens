@@ -8,5 +8,5 @@ setup(
     author="Fabian Köhler",
     author_email="fkoehler1024@googlemail.com",
     license="MIT",
-    install_requires=["cvxpy>=1.0.8", "numpy>=1.15.1"],
+    install_requires=["cvxpy>=1.0.8", "numpy>=1.15.1", "scipy >= 1.1.0"],
     packages=["compsens"])
